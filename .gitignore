@@ -1,0 +1,6 @@
+# IDE and libs cache
+.idea/
+.pytest_cache/
+
+# Python venv
+venv/
