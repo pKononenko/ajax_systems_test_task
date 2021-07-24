@@ -1,7 +1,4 @@
-from tests.page.hub_page import HubPage
 
-
-def logout_user(pm):
-    hub_page = pm.create_page(HubPage)
-    hub_page.click_settings_button()
-    hub_page.click_logout_button()
+def login_user(login_page, email, password):
+    login_page.fill_fields(email, password)
+    login_page.click_login_button()

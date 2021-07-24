@@ -7,8 +7,8 @@ from appium import webdriver
 from tests.page.page_manager import PagesManager
 from utils.android_utils import android_get_desired_cap
 
-# Does not make sense without fixture
-# from utils.test_utils import logout_user
+from tests.page.login_page import LoginPage
+from tests.page.hub_page import HubPage
 
 
 @pytest.fixture(scope='session')
@@ -30,20 +30,40 @@ def driver(setup_appium):
 
     yield driver
 
-    #driver.close()
-
-
-# can't create inteligent fixture
-'''@pytest.fixture(autouse=True)
-def test_case_fixture():
-    # preconds
-
-    yield
-
-    # post conds
-    logout_user()'''
-
 
 @pytest.fixture(scope='session')
 def page_manager(driver):
     return PagesManager(driver)
+
+
+@pytest.fixture()
+def pages_list(page_manager):
+    pm = page_manager
+    
+    login_page = pm.create_page(LoginPage)
+    hub_page = pm.create_page(HubPage)
+
+    return login_page, hub_page
+
+
+@pytest.yield_fixture(scope="session", autouse=True)
+def automate_logout(page_manager):
+    # preconds
+    pm = page_manager
+    
+    login_page = pm.create_page(LoginPage)
+    hub_page = pm.create_page(HubPage)
+
+    login_page.open_login_page()
+    
+
+    #yield {"login_page": login_page, "hub_page": hub_page}
+    yield pages_list
+
+
+    # postconds
+    if hub_page.check_create_hub_button():
+        hub_page.click_settings_button()
+        hub_page.click_logout_button()
+    else:
+        login_page.click_back_button()

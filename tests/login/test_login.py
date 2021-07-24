@@ -1,95 +1,48 @@
 from tests.page.login_page import LoginPage
 from tests.page.hub_page import HubPage
 
-from utils.test_utils import logout_user
+from utils.test_utils import login_user
 
 
-def test_correct_login(page_manager):
-    pm = page_manager
+class TestAjaxApp:
+
+    def test_correct_login(self, pages_list):
+        login_page, hub_page = pages_list
+
+        login_user(login_page, 'qa.ajax.app.automation@gmail.com', 'qa_automation_password')
+
+        hub_page.skip_push_notification_message()
+
+        assert hub_page.check_create_hub_button() > 0
+
+    def test_incorrect_login(self, pages_list):
+        login_page, hub_page = pages_list
+
+        login_user(login_page, 'ajax.omation@gmail.com', 'qa_automation_password')
+
+        assert hub_page.check_create_hub_button() == 0 and \
+            login_page.check_error_message() == 'Невірний логін або пароль'
     
-    login_page = pm.create_page(LoginPage)
-    login_page.open_login_page()
-    login_page.fill_fields('qa.ajax.app.automation@gmail.com', 'qa_automation_password')
-    login_page.click_login_button()
+    def test_incorrect_password(self, pages_list):
+        login_page, hub_page = pages_list
 
-    hub_page = pm.create_page(HubPage)
+        login_user(login_page, 'qa.ajax.app.automation@gmail.com', '111')
 
-    hub_page.skip_push_notification_message()
+        assert hub_page.check_create_hub_button() == 0 and \
+            login_page.check_error_message() == 'Невірний логін або пароль'
 
-    # Store value for assert before logout
-    # Because i can't create a good working
-    # fixture for automating this
-    button_on_page_bool = hub_page.check_create_hub_button() > 0
+    def test_all_blank_fields(self, pages_list):
+        login_page, hub_page = pages_list
+        
+        login_user(login_page, '', '')
 
-    # Logout user
-    logout_user(pm)
+        assert hub_page.check_create_hub_button() == 0 and \
+            login_page.check_error_message() == 'Будь ласка, заповніть усі поля'
 
-    assert button_on_page_bool
+    def test_whitespaces_fields(self, pages_list):
+        login_page, hub_page = pages_list
+        
+        login_user(login_page, '     ', '    ')
 
-def test_incorrect_login(page_manager):
-    pm = page_manager
-    
-    login_page = pm.create_page(LoginPage)
-    login_page.open_login_page()
-    login_page.fill_fields('ajax.omation@gmail.com', 'qa_automation_password')
-    login_page.click_login_button()
-
-    hub_page = pm.create_page(HubPage)
-
-    button_on_page_bool = hub_page.check_create_hub_button() == 0 and \
-        login_page.check_error_message() == 'Невірний логін або пароль'
-
-    login_page.click_back_button()
-
-    assert button_on_page_bool
-
-def test_incorrect_password(page_manager):
-    pm = page_manager
-    
-    login_page = pm.create_page(LoginPage)
-    login_page.open_login_page()
-    login_page.fill_fields('qa.ajax.app.automation@gmail.com', '111')
-    login_page.click_login_button()
-
-    hub_page = pm.create_page(HubPage)
-
-    button_on_page_bool = hub_page.check_create_hub_button() == 0 and \
-        login_page.check_error_message() == 'Невірний логін або пароль'
-
-    login_page.click_back_button()
-
-    assert button_on_page_bool
-
-def test_all_blank_fields(page_manager):
-    pm = page_manager
-    
-    login_page = pm.create_page(LoginPage)
-    login_page.open_login_page()
-    login_page.fill_fields('', '')
-    login_page.click_login_button()
-
-    hub_page = pm.create_page(HubPage)
-
-    button_on_page_bool = hub_page.check_create_hub_button() == 0 and \
-        login_page.check_error_message() == 'Будь ласка, заповніть усі поля'
-
-    login_page.click_back_button()
-
-    assert button_on_page_bool
-
-def test_whitespaces_fields(page_manager):
-    pm = page_manager
-    
-    login_page = pm.create_page(LoginPage)
-    login_page.open_login_page()
-    login_page.fill_fields('       ', '     ')
-    login_page.click_login_button()
-
-    hub_page = pm.create_page(HubPage)
-
-    button_on_page_bool = hub_page.check_create_hub_button() == 0 and \
-        login_page.check_error_message() == 'Будь ласка, заповніть усі поля'
-
-    login_page.click_back_button()
-
-    assert button_on_page_bool
+        assert hub_page.check_create_hub_button() == 0 and \
+            login_page.check_error_message() == 'Будь ласка, заповніть усі поля'
